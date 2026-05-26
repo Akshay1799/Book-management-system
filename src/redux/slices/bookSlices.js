@@ -1,89 +1,94 @@
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import api from '../../services/api';
+import { sessionStorageService } from '../../services/sessionStorageService';
 import toast from 'react-hot-toast';
-import api from '../../services/api.js';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
+// Fetch books - First time se API, then localStorage
 export const fetchBooks = createAsyncThunk(
   'books/fetchBooks',
-    async ({ page, limit, search, sort, order, genre }, { rejectWithValue }) => {
+  async ({ page, limit, search, sort, order, genre }, { rejectWithValue }) => {
     try {
-      const isSearching = !!search;
+      let allBooks = [];
 
-      let params = {};
-      
-      if (isSearching) {
-        params._page = 1;
-        params._per_page = 1000000; 
-      } else {
-        params._page = page;
-        params._per_page = limit;
+      // Check if sessionStorage already has data
+      if (sessionStorageService.isInitialized()) {
+        allBooks = sessionStorageService.getBooks();
       }
 
+      // If sessionStorage was empty or invalid, fetch from the public JSON source
+      if (!allBooks.length) {
+        const response = await api.get('db.json');
+        const responseData = response.data;
+
+        if (Array.isArray(responseData)) {
+          allBooks = responseData;
+        } else if (responseData && Array.isArray(responseData.books)) {
+          allBooks = responseData.books;
+        } else {
+          allBooks = [];
+        }
+
+        if (allBooks.length) {
+          sessionStorageService.initializeData(allBooks);
+          toast.success('Data loaded successfully!');
+        }
+      }
+
+      // Apply filtering
+      let filteredBooks = allBooks;
+
+      // Genre filter
+      if (genre && genre !== 'all') {
+        filteredBooks = filteredBooks.filter(book => book.genre === genre);
+      }
+
+      // Search filter
+      if (search) {
+        const regex = new RegExp(search, 'i');
+        filteredBooks = filteredBooks.filter(book => 
+          (book.title && regex.test(book.title)) ||
+          (book.author && regex.test(book.author)) ||
+          (book.isbn && regex.test(book.isbn))
+        );
+      }
+
+      // Apply sorting
       if (sort) {
-        params._sort = sort;
-        params._order = order;
-      }
-      if (genre && genre !== 'all') params.genre = genre;
-
-      const response = await api.get('/books', { params });
-
-      if (typeof response.data === 'string' && response.data.trim().startsWith('<!')) {
-        const message = 'API returned HTML instead of JSON. Start the API with: npm run server';
-        toast.error(message);
-        return rejectWithValue(message);
-      }
-      
-      // Extract the raw list of books
-      let allFetchedBooks = [];
-      let serverTotal = 0;
-
-      // Handle json-server response structure
-      if (response.data.data && Array.isArray(response.data.data)) {
-         allFetchedBooks = response.data.data;
-         serverTotal = response.data.items || allFetchedBooks.length;
-      } 
-
-      // Handle flat response
-      else if (Array.isArray(response.data)) {
-         allFetchedBooks = response.data;
-         serverTotal = response.headers['x-total-count'] || allFetchedBooks.length;
-      } else {
-        console.warn('Unexpected API response structure', response.data);
-        return { data: [], total: 0 };
+        filteredBooks.sort((a, b) => {
+          let aVal = a[sort];
+          let bVal = b[sort];
+          
+          // Handle numbers
+          if (typeof aVal === 'number' && typeof bVal === 'number') {
+            return order === 'asc' ? aVal - bVal : bVal - aVal;
+          }
+          
+          // Handle strings
+          aVal = String(aVal || '').toLowerCase();
+          bVal = String(bVal || '').toLowerCase();
+          
+          if (order === 'asc') {
+            return aVal > bVal ? 1 : -1;
+          } else {
+            return aVal < bVal ? 1 : -1;
+          }
+        });
       }
 
-      // If we are NOT searching, return directly (Server-side pagination used)
-      if (!isSearching) {
-          return { 
-             data: allFetchedBooks, 
-             total: parseInt(serverTotal) 
-          };
-      }
-
-      // FILTERING
-      const regex = new RegExp(search, 'i'); // Case-insensitive regex
-      
-      const filteredBooks = allFetchedBooks.filter(book => {
-          return (
-             (book.title && regex.test(book.title)) ||
-             (book.author && regex.test(book.author)) ||
-             (book.isbn && regex.test(book.isbn))
-          );
-      });
-
-      // Manual Pagination on the filtered list
+      // Pagination
       const totalItems = filteredBooks.length;
       const startIndex = (page - 1) * limit;
       const endIndex = startIndex + limit;
       const paginatedBooks = filteredBooks.slice(startIndex, endIndex);
 
       return {
-          data: paginatedBooks,
-          total: totalItems
+        data: paginatedBooks,
+        total: totalItems
       };
 
     } catch (error) {
-       console.error('Fetch Books Error:', error);
-       toast.error('Failed to fetch books');
+      console.error('Fetch Books Error:', error);
+      toast.error('Failed to fetch books');
       return rejectWithValue(error.message);
     }
   }
@@ -93,15 +98,17 @@ export const fetchBookById = createAsyncThunk(
   'books/fetchBookById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/books/${id}`);
-      return response.data;
-    } catch (error) {
-      if (error.code === 'ERR_NETWORK') {
-        console.error('Network Error: The API is unreachable. Current Base URL:', api.defaults.baseURL);
-        toast.error(`API Error: Cannot connect to ${api.defaults.baseURL}`);
-      } else {
-        toast.error('Failed to fetch book details');
+      // Get from localStorage
+      const book = sessionStorageService.getBookById(id);
+      
+      if (!book) {
+        toast.error('Book not found');
+        return rejectWithValue('Book not found');
       }
+      
+      return book;
+    } catch (error) {
+      toast.error('Failed to fetch book details');
       return rejectWithValue(error.message);
     }
   }
@@ -111,21 +118,12 @@ export const addBook = createAsyncThunk(
   'books/addBook',
   async (bookData, { rejectWithValue }) => {
     try {
-      // Normalize ISBN: remove all non-alphanumeric characters (dashes, spaces, etc.)
+      // Normalize ISBN
       const normalizeIsbn = (isbn) => isbn.replace(/[^a-zA-Z0-9]/g, '');
       const newBookIsbnNormalized = normalizeIsbn(bookData.isbn);
 
-      // Fetch all books to check for duplicates robustly
-      // We can't rely on json-server exact match query because of format differences (dashes)
-      const allBooksResponse = await api.get('/books');
-      
-      let allBooks = [];
-      if (allBooksResponse.data.data && Array.isArray(allBooksResponse.data.data)) {
-        allBooks = allBooksResponse.data.data;
-      } else if (Array.isArray(allBooksResponse.data)) {
-        allBooks = allBooksResponse.data;
-      }
-
+      // Check for duplicates
+      const allBooks = sessionStorageService.getBooks();
       const duplicate = allBooks.find(book => 
         book.isbn && normalizeIsbn(book.isbn) === newBookIsbnNormalized
       );
@@ -135,16 +133,12 @@ export const addBook = createAsyncThunk(
         return rejectWithValue('Book with this ISBN already exists');
       }
 
-      const response = await api.post('/books', {
-        ...bookData,
-        createdAt: new Date().toISOString()
-      });
+      // Add to localStorage
+      const newBook = sessionStorageService.addBook(bookData);
       toast.success('Book added successfully');
-      return response.data;
+      return newBook;
     } catch (error) {
-       if (error !== 'Book with this ISBN already exists' && !error.message?.includes('Book with this ISBN already exists')) {
-          toast.error('Failed to add book');
-       }
+      toast.error('Failed to add book');
       return rejectWithValue(error.message || error);
     }
   }
@@ -154,9 +148,15 @@ export const updateBook = createAsyncThunk(
   'books/updateBook',
   async ({ id, data }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/books/${id}`, data);
+      const updatedBook = sessionStorageService.updateBook(id, data);
+      
+      if (!updatedBook) {
+        toast.error('Book not found');
+        return rejectWithValue('Book not found');
+      }
+      
       toast.success('Book updated successfully');
-      return response.data;
+      return updatedBook;
     } catch (error) {
       toast.error('Failed to update book');
       return rejectWithValue(error.message);
@@ -168,7 +168,7 @@ export const deleteBook = createAsyncThunk(
   'books/deleteBook',
   async (id, { rejectWithValue }) => {
     try {
-      await api.delete(`/books/${id}`);
+      sessionStorageService.deleteBook(id);
       toast.success('Book deleted successfully');
       return id;
     } catch (error) {
@@ -203,7 +203,7 @@ const booksSlice = createSlice({
   reducers: {
     setSearch: (state, action) => {
       state.filters.search = action.payload;
-      state.pagination.currentPage = 1; // Reset to page 1 on filter change
+      state.pagination.currentPage = 1;
     },
     setGenre: (state, action) => {
       state.filters.genre = action.payload;
@@ -250,7 +250,7 @@ const booksSlice = createSlice({
       })
       // Add Book
       .addCase(addBook.fulfilled, () => {
-        toast.success('Book added successfully');
+        // Re-fetch will happen from component
       })
       // Update Book
       .addCase(updateBook.fulfilled, (state, action) => {

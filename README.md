@@ -155,7 +155,7 @@ For production, the app uses My JSON Server automatically.
 
 Akshay Ladne
 
-## GitHub: @Akshay1799
+GitHub: @Akshay1799
 
-## Live Demo:
+Live Demo: [Link](https://book-management-system-amber-three.vercel.app/)
 

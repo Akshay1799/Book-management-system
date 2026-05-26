@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
-import { updateBook } from '../../redux/slices/bookSlices.js';
-import { bookValidation } from '../../utils/validation.js';
+import { updateBook } from '../../redux/slices/bookSlices';
+import { bookValidation } from '../../utils/validation';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import { cn } from '../../utils/cn';

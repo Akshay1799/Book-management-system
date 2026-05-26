@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchBookById, deleteBook } from '../redux/slices/bookSlices.js';
+import { fetchBookById, deleteBook } from '../redux/slices/bookSlices';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import Loader from '../components/common/Loader';
 import ErrorMessage from '../components/common/ErrorMessage';
 import Button from '../components/common/Button';
-import BookCover from '../components/common/BookCover';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { IoArrowBack, IoPencil, IoTrash } from 'react-icons/io5';
 import EditBookForm from '../components/books/EditBookForm';
@@ -91,9 +90,8 @@ const BookDetailsPage = () => {
                             <div className="lg:w-1/3 bg-gray-50/50 p-8 flex flex-col items-center border-b lg:border-b-0 lg:border-r border-gray-100 relative">
                                 <div className="relative group perspective-1000 w-full max-w-[280px] mx-auto">
                                     <div className="absolute -inset-1 bg-linear-to-r from-indigo-500 to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                                    <BookCover
-                                        book={currentBook}
-                                        eager
+                                    <img
+                                        src={currentBook.coverImage || 'https://via.placeholder.com/300x450'}
                                         alt={currentBook.title}
                                         className="relative w-full aspect-2/3 object-cover rounded-lg shadow-2xl transition-transform duration-500 transform group-hover:scale-[1.02]"
                                     />

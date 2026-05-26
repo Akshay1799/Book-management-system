@@ -49,7 +49,7 @@ const Navbar = ({ onAddClick }) => {
                                 <input
                                     type="text"
                                     placeholder="Search by title, author, or ISBN..."
-                                    className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl leading-5 bg-gray-50/50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 sm:text-sm transition-all duration-200"
+                                    className="block w-full pl-10 pr-3 py-2 border border-indigo-200 rounded-xl leading-5 bg-gray-50/50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 sm:text-sm transition-all duration-200"
                                     value={localSearch}
                                     onChange={(e) => setLocalSearch(e.target.value)}
                                 />
@@ -59,10 +59,10 @@ const Navbar = ({ onAddClick }) => {
                         {isHomePage && (
                             <Button
                                 onClick={onAddClick}
-                                className="gap-2 shadow-indigo-100 shadow-lg hover:shadow-indigo-200 hover:-translate-y-0.5 transition-all"
+                                className="bg-indigo-600 gap-2 shadow-indigo-100 shadow-lg hover:shadow-indigo-200 hover:-translate-y-0.5 transition-all"
                             >
                                 <IoAdd size={20} />
-                                <span className="hidden sm:inline">Add Book</span>
+                                <span className=" hidden sm:inline">Add Book</span>
                             </Button>
                         )}
                     </div>

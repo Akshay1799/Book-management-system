@@ -1,10 +1,10 @@
 import { useForm, Controller } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
-import { addBook } from '../../redux/slices/bookSlices.js';
-import { bookValidation } from '../../utils/validation.js';
+import { addBook } from '../../redux/slices/bookSlices';
+import { bookValidation } from '../../utils/validation';
 import Input from '../common/Input';
 import Button from '../common/Button';
-import { cn } from '../../utils/cn.js';
+import { cn } from '../../utils/cn';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 

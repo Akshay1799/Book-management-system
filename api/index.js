@@ -4,14 +4,13 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const server = jsonServer.create();
 const middlewares = jsonServer.defaults();
 
-// In Vercel, we can't write to the file system, so we load the data in memory
-// or simply point to the file (which will be read-only in effect).
-const dbString = fs.readFileSync(path.join(__dirname, '../db.json'), 'utf-8');
+const dbString = fs.readFileSync(path.join(process.cwd(), 'db.json'), 'utf-8');
 const db = JSON.parse(dbString);
 const router = jsonServer.router(db);
 
