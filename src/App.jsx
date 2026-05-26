@@ -1,11 +1,17 @@
 import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LandingPage from './pages/LandingPage.jsx';
+import BookDetailsPage from './pages/BookDetailPage.jsx';
 
 function App() {
 
   return (
-    <>
-      <h1 className="text-3xl font-bold flex justify-center items-center h-screen">Book Management System</h1>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/books/:id" element={<BookDetailsPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
