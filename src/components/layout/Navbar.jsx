@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { setSearch } from '../../redux/slices/booksSlice';
+import { setSearch } from '../../redux/slices/bookSlices.js';
 import useDebounce from '../../hooks/useDebounce';
 import Button from '../common/Button';
-import { IoAdd, IoSearch, IoLibrary } from 'react-icons/io5';
+import { IoAdd, IoSearch } from 'react-icons/io5';
+import { LuLibraryBig } from "react-icons/lu";
 
 const Navbar = ({ onAddClick }) => {
     const dispatch = useDispatch();
@@ -31,7 +32,7 @@ const Navbar = ({ onAddClick }) => {
                     <div className="flex items-center">
                         <Link to="/" className=" flex items-center gap-2 group">
                             <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-200 group-hover:scale-105 transition-transform">
-                                <IoLibrary size={24} />
+                                <LuLibraryBig  size={24} />
                             </div>
                             <span className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-gray-900 to-gray-600 tracking-tight">
                                 Book Store

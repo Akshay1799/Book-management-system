@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { deleteBook } from '../../redux/slices/booksSlice';
+import { deleteBook } from '../../redux/slices/bookSlices.js';
 import { IoEye, IoTrash } from 'react-icons/io5';
 import Button from '../common/Button';
+import BookCover from '../common/BookCover';
 import ConfirmDialog from '../common/ConfirmDialog';
 
 const BookTableRow = React.memo(({ book }) => {
@@ -30,12 +31,11 @@ const BookTableRow = React.memo(({ book }) => {
                 className="hover:bg-indigo-50/30 transition-colors cursor-pointer group"
             >
                 <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="h-14 w-10 shrink-0">
-                        <img
-                            src={book.coverImage || 'https://via.placeholder.com/150'}
+                    <div className="h-14 w-10 shrink-0 overflow-hidden rounded bg-gray-100 shadow-md">
+                        <BookCover
+                            book={book}
                             alt={book.title}
-                            className="h-14 w-10 object-cover rounded shadow-md"
-                            loading="lazy"
+                            className="h-full w-full object-cover"
                         />
                     </div>
                 </td>

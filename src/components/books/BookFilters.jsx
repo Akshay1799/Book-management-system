@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { setGenre } from '../../redux/slices/booksSlice';
+import { setGenre } from '../../redux/slices/bookSlices.js';
 
 const GENRES = ['Fiction', 'Non-Fiction', 'Sci-Fi', 'Mystery', 'Romance', 'History', 'Biography', 'Technology', 'Science', 'Fantasy', 'Horror', 'Self-Help'];
 

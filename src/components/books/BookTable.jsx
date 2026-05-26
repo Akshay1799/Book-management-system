@@ -1,7 +1,7 @@
 import BookTableRow from './BookTableRow';
 import { IoArrowUp, IoArrowDown, IoSwapVertical } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
-import { setSorting } from '../../redux/slices/booksSlice';
+import { setSorting } from '../../redux/slices/bookSlices.js';
 
 const BookTable = ({ books, isLoading }) => {
     const dispatch = useDispatch();

@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { setPage } from '../../redux/slices/booksSlice';
+import { setPage } from '../../redux/slices/bookSlices.js';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import Button from '../common/Button';
 

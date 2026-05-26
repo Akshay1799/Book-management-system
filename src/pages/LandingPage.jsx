@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchBooks } from '../redux/slices/booksSlice';
+import { fetchBooks } from '../redux/slices/bookSlices.js';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import BookTable from '../components/books/BookTable';
