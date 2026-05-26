@@ -25,6 +25,12 @@ export const fetchBooks = createAsyncThunk(
       if (genre && genre !== 'all') params.genre = genre;
 
       const response = await api.get('/books', { params });
+
+      if (typeof response.data === 'string' && response.data.trim().startsWith('<!')) {
+        const message = 'API returned HTML instead of JSON. Start the API with: npm run server';
+        toast.error(message);
+        return rejectWithValue(message);
+      }
       
       // Extract the raw list of books
       let allFetchedBooks = [];
@@ -90,7 +96,12 @@ export const fetchBookById = createAsyncThunk(
       const response = await api.get(`/books/${id}`);
       return response.data;
     } catch (error) {
-      toast.error('Failed to fetch book details');
+      if (error.code === 'ERR_NETWORK') {
+        console.error('Network Error: The API is unreachable. Current Base URL:', api.defaults.baseURL);
+        toast.error(`API Error: Cannot connect to ${api.defaults.baseURL}`);
+      } else {
+        toast.error('Failed to fetch book details');
+      }
       return rejectWithValue(error.message);
     }
   }
